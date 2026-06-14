@@ -1,6 +1,22 @@
 # mcp-query
 
-Local dev workspace for the five MCP query server packages. This repo uses **git submodules** — each `mcp-*-query/` folder tracks its own GitHub remote and npm publish cycle.
+[![GitHub](https://img.shields.io/github/stars/achmadya-dev/mcp-query?style=social)](https://github.com/achmadya-dev/mcp-query)
+
+Dev workspace for [@achmadya-dev](https://github.com/achmadya-dev) MCP query servers — **Excel**, **MySQL**, **PostgreSQL**, **SQL Server**, and **SQLite**. Uses git submodules (each package stays its own repo + npm publish), Docker Compose for local databases, and Cursor MCP config via `npx`.
+
+**Repository:** https://github.com/achmadya-dev/mcp-query
+
+## Packages (submodules)
+
+| Submodule | npm | GitHub |
+| --- | --- | --- |
+| `mcp-excel-query` | `@achmadya-dev/mcp-excel-query` | [achmadya-dev/mcp-excel-query](https://github.com/achmadya-dev/mcp-excel-query) |
+| `mcp-mysql-query` | `@achmadya-dev/mcp-mysql-query` | [achmadya-dev/mcp-mysql-query](https://github.com/achmadya-dev/mcp-mysql-query) |
+| `mcp-postgres-query` | `@achmadya-dev/mcp-postgres-query` | [achmadya-dev/mcp-postgres-query](https://github.com/achmadya-dev/mcp-postgres-query) |
+| `mcp-mssql-query` | `@achmadya-dev/mcp-mssql-query` | [achmadya-dev/mcp-mssql-query](https://github.com/achmadya-dev/mcp-mssql-query) |
+| `mcp-sqlite-query` | `@achmadya-dev/mcp-sqlite-query` | [achmadya-dev/mcp-sqlite-query](https://github.com/achmadya-dev/mcp-sqlite-query) |
+
+Shared runtime: [mcp-core](https://github.com/achmadya-dev/mcp-core).
 
 ## Layout
 
@@ -17,51 +33,76 @@ mcp-query/
 └── mcp-sqlite-query/    → submodule: achmadya-dev/mcp-sqlite-query
 ```
 
-Shared runtime: [mcp-core](https://github.com/achmadya-dev/mcp-core).
+## Workflow
 
-## Clone
+Two git layers: **this repo** (workspace) and **submodules** (published packages).
+
+```mermaid
+flowchart LR
+  subgraph workspace["mcp-query"]
+    compose[docker-compose]
+    mcpcfg[.cursor/mcp.json]
+    pin[submodule pointers]
+  end
+  subgraph pkg["mcp-*-query submodule"]
+    code[code + tests]
+    pr[PR + CI]
+    npm[Changesets → npm]
+  end
+  pin --> pkg
+  code --> pr --> npm
+```
+
+| Goal | Where | Commands |
+| --- | --- | --- |
+| Change package code | inside submodule | `cd mcp-mysql-query` → branch, commit, `gh pr create` |
+| Publish to npm | submodule repo | `pnpm changeset` → merge Version packages PR |
+| Local DB + MCP test | workspace root | `docker compose up -d`, Cursor reads `.cursor/mcp.json` |
+| Pin newer package version | workspace root | `git submodule update --remote` → commit pointer |
+| Change compose / MCP config | workspace root | edit root files → commit → `git push origin main` |
+
+### Workspace (parent repo)
 
 ```bash
 git clone --recurse-submodules git@github.com:achmadya-dev/mcp-query.git
 cd mcp-query
 cp .env.example .env
 docker compose up -d
-```
 
-If you already cloned without submodules:
-
-```bash
+# pull latest pinned submodules after clone
 git submodule update --init --recursive
-```
 
-## Sync submodules with remote
-
-Update all packages to latest `main`:
-
-```bash
+# refresh all packages to latest main (optional)
 git submodule update --remote --merge
+git add mcp-excel-query mcp-mysql-query mcp-postgres-query mcp-mssql-query mcp-sqlite-query
+git commit -m "chore: bump submodules"
+git push origin main
 ```
 
-Or work inside one package as usual:
+### Package (submodule)
 
 ```bash
-cd mcp-excel-query
-git pull origin main
+cd mcp-postgres-query
+pnpm install && pnpm run build && pnpm test
 git checkout -b fix/my-change
-# commit, push, open PR on that repo
+git push -u origin fix/my-change
+gh pr create --repo achmadya-dev/mcp-postgres-query --base main
 ```
 
-Commit pointer updates in the parent when you want to pin new versions:
+### Release (Changesets, per submodule)
 
 ```bash
-cd ..   # back to mcp-query root
-git add mcp-excel-query
-git commit -m "chore: bump mcp-excel-query submodule"
+cd mcp-mysql-query
+pnpm changeset
+git add .changeset/*.md && git commit -m "chore: add changeset"
+git push origin HEAD
+gh pr create --repo achmadya-dev/mcp-mysql-query --base main
+# after merge: merge "Version packages" PR → npm publish
 ```
 
-## Develop
+Install published packages: `npx -y @achmadya-dev/mcp-<name>-query`.
 
-Each package is developed in its own repo. Open the folder you need (or clone it directly from GitHub):
+## Develop from source (submodule)
 
 ```bash
 cd mcp-excel-query   # or any sibling repo
@@ -70,38 +111,7 @@ pnpm run build
 pnpm test
 ```
 
-Point Cursor at the built entrypoint (`dist/index.js`) — see each repo's README for MCP config and env vars.
-
-### Pull request workflow
-
-```bash
-git checkout -b fix/my-change
-# edit, build, test
-git add -A && git commit -m "fix: …"
-git push -u origin fix/my-change
-gh pr create --base main
-```
-
-CI runs `build` + `test` on every PR to `main`. Merge when checks pass.
-
-### Release (Changesets)
-
-For changes that should ship to npm, add a changeset before merging:
-
-```bash
-pnpm changeset   # patch / minor / major + short description
-git add .changeset/*.md && git commit -m "chore: add changeset"
-```
-
-After merge to `main`:
-
-1. The **Publish** workflow opens or updates a **Version packages** PR (`changeset-release/main`).
-2. CI runs on that branch automatically (`build-and-test`); merge when checks pass.
-3. Merge that PR → version bump, `CHANGELOG.md`, and publish to npm.
-
-If CI did not run, re-trigger from **Actions → CI → Run workflow** (`workflow_dispatch`).
-
-Install published packages with `npx -y @achmadya-dev/mcp-<name>-query`.
+For MCP in Cursor, open the **workspace root** (`mcp-query/`) so `.cursor/mcp.json` and `.env` apply. Published packages are wired via `npx`; for local `dist/` builds see each submodule's README.
 
 ## Local databases (Docker)
 
