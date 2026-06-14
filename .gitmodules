@@ -1,0 +1,15 @@
+[submodule "mcp-excel-query"]
+	path = mcp-excel-query
+	url = https://github.com/achmadya-dev/mcp-excel-query.git
+[submodule "mcp-mysql-query"]
+	path = mcp-mysql-query
+	url = https://github.com/achmadya-dev/mcp-mysql-query.git
+[submodule "mcp-postgres-query"]
+	path = mcp-postgres-query
+	url = https://github.com/achmadya-dev/mcp-postgres-query.git
+[submodule "mcp-mssql-query"]
+	path = mcp-mssql-query
+	url = https://github.com/achmadya-dev/mcp-mssql-query.git
+[submodule "mcp-sqlite-query"]
+	path = mcp-sqlite-query
+	url = https://github.com/achmadya-dev/mcp-sqlite-query.git

@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "npx",
+      "args": ["-y", "@achmadya-dev/mcp-mysql-query"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@achmadya-dev/mcp-postgres-query"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    "mssql": {
+      "command": "npx",
+      "args": ["-y", "@achmadya-dev/mcp-mssql-query"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": ["-y", "@achmadya-dev/mcp-sqlite-query"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    "excel": {
+      "command": "npx",
+      "args": ["-y", "@achmadya-dev/mcp-excel-query"],
+      "envFile": "${workspaceFolder}/.env"
+    }
+  }
+}
