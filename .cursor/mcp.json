@@ -1,28 +1,31 @@
 {
   "mcpServers": {
     "mysql": {
-      "command": "npx",
-      "args": ["-y", "@achmadya-dev/mcp-mysql-query"],
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-mysql-query/dist/index.js"],
       "envFile": "${workspaceFolder}/.env"
     },
     "postgres": {
-      "command": "npx",
-      "args": ["-y", "@achmadya-dev/mcp-postgres-query"],
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-postgres-query/dist/index.js"],
       "envFile": "${workspaceFolder}/.env"
     },
     "mssql": {
-      "command": "npx",
-      "args": ["-y", "@achmadya-dev/mcp-mssql-query"],
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-mssql-query/dist/index.js"],
       "envFile": "${workspaceFolder}/.env"
     },
     "sqlite": {
-      "command": "npx",
-      "args": ["-y", "@achmadya-dev/mcp-sqlite-query"],
+      "command": "node",
+      "args": [
+        "--experimental-sqlite",
+        "${workspaceFolder}/mcp-sqlite-query/dist/index.js"
+      ],
       "envFile": "${workspaceFolder}/.env"
     },
     "excel": {
-      "command": "npx",
-      "args": ["-y", "@achmadya-dev/mcp-excel-query"],
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp-excel-query/dist/index.js"],
       "envFile": "${workspaceFolder}/.env"
     }
   }
